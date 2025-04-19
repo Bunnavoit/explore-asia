@@ -16,7 +16,7 @@ const ProductCard = () => {
       <CardContent className="text-[15px] text-muted-foreground px-5 gap-2 flex flex-col">
         <div className="relative w-full aspect-video bg-muted rounded-xl overflow-hidden">
           <Image
-            src="/images/download.jfif"
+            src="/images/angkor.jpg"
             alt="location"
             fill
             className="object-cover"
