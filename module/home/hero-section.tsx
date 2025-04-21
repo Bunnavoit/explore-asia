@@ -4,8 +4,8 @@ import Image from "next/image";
 
 export default function HeroSection() {
   return (
-    <section className="w-full bg-[#f5fcff] py-0 sm:py-20 md:py-20 ">
-      <div className="flex flex-col-reverse lg:flex-row items-center justify-between px-4 sm:px-8 lg:px-24 max-w-screen-xl mx-auto gap-12">
+    <section className="w-full bg-[rgb(245,252,255)] py-0 sm:py-20 md:py-20 ">
+      <div className="flex flex-col-reverse lg:flex-row items-center justify-between max-w-screen-xl mx-auto gap-12">
         <div className="max-w-xl text-center lg:text-left">
           <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight text-gray-900">
             Start your journey <br />

@@ -6,15 +6,24 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { authClient, useSession } from "@/common/lib/auth/auth-client";
+import { useRouter } from "next/navigation";
 
 const navigation = [
-  { name: "Destiny", href: "/desnity" },
+  { name: "Destiny", href: "/destiny" },
   { name: "Contact-Us", href: "/contact-us" },
   { name: "About-Us", href: "/about-us" },
 ];
 
 export default function HeaederNavigation() {
+  const { data } = useSession();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    router.push("/auth/sign-in");
+  };
 
   return (
     <div className="bg-white">
@@ -64,12 +73,21 @@ export default function HeaederNavigation() {
                       {item.name}
                     </Link>
                   ))}
-                  <a
-                    href="#"
-                    className="block text-base font-semibold text-gray-900 hover:bg-gray-50 rounded px-3 py-2"
-                  >
-                    Log in
-                  </a>
+                  {data?.user ? (
+                    <Link
+                      href="/profile"
+                      className="block text-base font-semibold text-gray-900 hover:bg-gray-50 rounded px-3 py-2"
+                    >
+                      View Profile
+                    </Link>
+                  ) : (
+                    <Link
+                      href="/auth/sign-in"
+                      className="block text-base font-semibold text-gray-900 hover:bg-gray-50 rounded px-3 py-2"
+                    >
+                      Log in
+                    </Link>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
@@ -86,12 +104,18 @@ export default function HeaederNavigation() {
             ))}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <Link
-              href="/auth/sign-in"
-              className="text-sm font-semibold leading-6 text-gray-900"
-            >
-              Log in <span aria-hidden="true">&rarr;</span>
-            </Link>
+            {data?.user ? (
+              <Button variant={"link"} onClick={handleLogout} className="">
+                Log out
+              </Button>
+            ) : (
+              <Link
+                href="/auth/sign-in"
+                className="block text-base font-semibold text-gray-900 hover:bg-gray-50 rounded px-3 py-2"
+              >
+                Log in
+              </Link>
+            )}
           </div>
         </nav>
       </header>

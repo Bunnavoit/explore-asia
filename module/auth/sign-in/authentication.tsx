@@ -10,89 +10,60 @@ import {
   FormMessage,
 } from "@/common/components/ui/form";
 import { Input } from "@/common/components/ui/input";
+import { signIn } from "@/common/lib/auth/auth-client";
 import { signInSchema } from "@/common/types/auth/sign-in-type";
-// import { useSignin } from "@/common/services/auth/login/service";
-// import { signInSchema } from "@/common/types/auth/sign-in-type";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import toast from "react-hot-toast";
 import { z } from "zod";
-
-export const description =
-  "A login page with two columns. The first column has the login form with email and password. There's a Forgot your passwork link and a link to sign up if you do not have an account. The second column has a cover image.";
 
 export default function Authentication() {
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
-      login: "",
+      email: "",
       password: "",
     },
   });
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   async function onSubmit(data: z.infer<typeof signInSchema>) {
-    const formData = new FormData();
-    formData.append("login", data.login);
-    formData.append("password", data.password);
+    const { email, password } = data;
 
-    const res = await fetch("/api/auth/signin/password", {
-      method: "POST",
-      body: formData,
-    });
+    if (!email || !password) {
+      toast.error("Login or password is missing");
+      return;
+    }
 
-    if (res.ok) {
-      toast.success("Login successful");
-      router.push("/"); // or wherever you want
+    const res = await signIn.email(
+      { email, password },
+      {
+        onRequest: (ctx) => {
+          setIsLoading(true);
+        },
+        onResponse: (ctx) => {
+          setIsLoading(false);
+        },
+      }
+    );
+    console.log("check response", res);
+    if (res && res.data?.token && !res.error) {
+      toast.success("Login successful!");
+      router.push("/"); // ✅ Redirect to homepage
     } else {
-      const error = await res.text();
-      toast.error("Login failed: " + error);
+      toast.error(
+        typeof res?.error === "string"
+          ? res.error
+          : "Login failed. Please check your credentials."
+      );
     }
   }
-
-  //   const { mutate: signin, isPending } = useSignin();
-
-  //   const handleLogin = (data: z.infer<typeof signInSchema>) => {
-  //     signin(data, {
-  //       onSuccess: () => {
-  //         toast.success(`Login success `, {
-  //           position: "bottom-center",
-  //         });
-  //         router.replace("/welcome");
-  //       },
-  //       onError: () => {
-  //         toast.error(`Login failed `, {
-  //           position: "bottom-center",
-  //         });
-  //       },
-  //     });
-  //   };
-
-  //testing with auth0
-  // const handleLogin = async (data: z.infer<typeof signInSchema>) => {
-  //   const res = await fetch("/api/login", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(data),
-  //   });
-
-  //   if (res.ok) {
-  //     await res.json();
-  //     // result contains tokens. You might store them in cookies via the server response
-  //     // If you set a session cookie on the server, you're already logged in.
-  //     toast.success("Login successful", {
-  //       position: "bottom-center",
-  //     });
-  //     router.replace("/welcome");
-  //   } else {
-  //     toast.error("Login failed", {
-  //       position: "bottom-center",
-  //     });
-  //   }
-  // };
 
   return (
     <Form {...form}>
@@ -118,7 +89,7 @@ export default function Authentication() {
               <div className="grid gap-4">
                 <FormField
                   control={form.control}
-                  name="login"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="font-semibold">Email</FormLabel>
@@ -159,7 +130,11 @@ export default function Authentication() {
                   className="w-full"
                   disabled={form.formState.isSubmitting}
                 >
-                  {form.formState.isSubmitting ? "Logging in..." : "Login"}
+                  {isLoading ? (
+                    <Loader2 size={16} className="animate-spin" />
+                  ) : (
+                    "Login"
+                  )}
                 </Button>
                 <Button variant="outline" className="w-full">
                   Login with Google
